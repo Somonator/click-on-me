@@ -1,0 +1,82 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Click on me</title>
+		<meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes" />
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div class="game-window">
+			<div class="click"></div>
+		</div>
+
+		<div class="start-game">
+			<div class="main-menu menu">
+				<h1 class="title">Click on me</h1>
+
+				<button data-menu="single-game" class="get-menu">Одиночная игра</button>
+				<button data-menu="arcade-mode" class="get-menu">Аркада</button>
+				<button data-menu="achievements" class="get-menu">Достижения</button>
+			</div>
+
+			<div class="single-game menu" style="display: none;">
+				<div class="title">Одиночная игра</div>
+				<p class="copy">Выбирай сложность и кликай на кружок,<br>а я подсчитаю количество кликов.</p>
+				<p class="record" style="display: none;"></p>				
+
+				<select class="difficult">
+					<option value="easy" selected>Легко</option>
+					<option value="normal">Нормально</option>
+					<option value="hard">Сложно</option>
+				</select>
+
+				<button class="start">Начать игру</button>
+				<button data-menu="main-menu" class="back-menu">Назад</button>
+			</div>
+
+			<div class="arcade-mode menu" style="display: none;">
+				<div class="title">Аркада</div>
+				<p class="lvl">Уровень <span class="now">1</span> из <span class="of">12</span></p>
+				
+				<button class="start">Начать игру</button>
+				<button data-menu="main-menu" class="back-menu">Назад</button>
+			</div>
+
+			<div class="achievements menu" style="display: none;">
+				<div class="title">Достижения</div>
+				<p class="sub-title">Рекорды в одиночной игре:</p>
+
+				<div class="row tac">
+					<div class="col-3 bold">Легко</div>
+					<div class="col-3 bold">Нормально</div>
+					<div class="col-3 bold">Сложно</div>
+					<div class="col-3 record easy"></div>
+					<div class="col-3 record normal"></div>
+					<div class="col-3 record hard"></div>
+				</div>
+
+				<hr>
+
+				<p class="sub-title">Максимальный уровень аркады:</p>
+				<p class="arcade-max record">1</p>
+
+				<hr>
+
+				<p class="sub-title">Ачивки:</p>
+				<p class="record">Скоро</p>
+				
+				<button data-menu="main-menu" class="back-menu">Назад</button>
+			</div>
+			<div class="result menu" style="display: none;">
+				<div class="title">Твой результат</div>
+				<p class="desc" style="display: none;"></p>
+				<p class="number-clicks" style="display: none;"></p>
+
+				<button data-menu="" class="back-menu">Назад</button>			
+			</div>
+		</div>
+
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+		<script src="game.js"></script>
+	</body>
+</html>
