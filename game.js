@@ -1,236 +1,310 @@
-let game = {
-    clicks: 0,
-    tools: {
-        set_random_place_area: (el, area) => {
-            let width = Math.round(0 + Math.random() * (area.width() - 0)) - el.width(),
-                height = Math.round(0 + Math.random() * (area.height() - 0)) - el.height();
-             
-            el.css({
-                'left': width,
-                'top': height
-            });
-        },
-        set_equal_width: (elements) => {
-            let tallest_column = 0;
-        
-            $(elements).each((index, element) => {
-                current_width = $(element).width();
-                
-                $(element).width(current_width);
+class tools {
+    get_storage = (name) => {
+        return localStorage.getItem(name);
+    }
 
-                if (current_width > tallest_column) {
-                    tallest_column = current_width;
-                }
-            });
-        
-            $(elements).width(tallest_column);            
-        },
-        set_storage: (data, name) => {
-            let to_json = JSON.stringify(data);
+    set_storage = (data, name) => {
+        let to_json = JSON.stringify(data);
 
-            localStorage.setItem(name, to_json);
-        },        
-    },
-    common: {
-        open_menu: (event) => {
-            event.preventDefault();
+        localStorage.setItem(name, to_json);
+    }
 
-            let menu_class = $(event.target).attr('data-menu'),
-                menu = game.menus.find('.' + menu_class),
-                form_els = menu.find('button, select');
+    set_equal_width = (elements) => {
+        let tallest_column = 0;
 
-            if (menu.length > 0) {
-                menu.show(250, function() {
-                    game.tools.set_equal_width(form_els);
-                }).siblings().hide();
+        $(elements).each((index, element) => {
+            let current_width = $(element).width();
+
+            $(element).width(current_width);
+
+            if (current_width > tallest_column) {
+                tallest_column = current_width;
             }
-        },
-        click_action: (event) => {
-            event.preventDefault();
+        });
 
-            game.tools.set_random_place_area(game.click_el, game.window);
-            game.clicks += 1;
-        },
-        start: (params) => {
-            game.clicks = 0;
-            game.tools.set_random_place_area(game.click_el, game.window);
-            game.menus.hide();
-            game.window.css({
-                'width': params.window_width + 'vw',
-                'height': params.window_height + 'vh'
-            });
-            game.click_el.css({
-                'width': params.click_el_width,
-                'height': params.click_el_height
-            }).show(100).off('click').click(game.common.click_action);
+        $(elements).width(tallest_column);
+    }
+
+    set_random_place_area = (el, area) => {
+        let width = Math.round(0 + Math.random() * (area.width() - 0)) - el.width(),
+            height = Math.round(0 + Math.random() * (area.height() - 0)) - el.height();
+
+        el.css({
+            'left': width,
+            'top': height
+        });
+    }
+}
+
+class main {
+    constructor() {
+        this.clicks = 0;
+        this.result_window = g_data.result_menu;
+
+        this.init();
+    }
+
+    open_menu = (event) => {
+        event.preventDefault();
+
+        let menu_class = $(event.target).attr('data-menu'),
+            menu = g_data.menus.find('.' + menu_class),
+            form_els = menu.find('button, select');
+
+        if (menu.length > 0) {
+            menu.show(250, () => {
+                g_tools.set_equal_width(form_els);
+            }).siblings().hide();
         }
-    },
-    single_mode: {
-        menu_now: null,
-        change_difficult_select: (event) =>  {
-            let difficult = $(event.target).find('option:selected').attr('value'),
-                record_el = game.single_mode.menu.find('.record');
-    
-            if (game.database.single_mode[difficult].record) {
-                record_el.show(100).html(game.messages.single_new_record + ' ' + game.database.single_mode[difficult].record);
-            } else {
-                record_el.hide(100);
-            }
-        },
-        get_params: (difficult) => {
-            let params = { /* easy */
-                    window_width: 50,
-                    window_height: 50,
-                    click_el_width: 50,
-                    click_el_height: 50,
-                    timeout: 20
-                };
+    }
 
-            switch (difficult) {
-                case 'normal':
-                    params.window_width = params.window_height = 80;
-                    params.click_el_width = params.click_el_height = 35;
-                    params.timeout = 15;
-                break;
-    
-                case 'hard':
-                    params.window_width = params.window_height = 100;
-                    params.click_el_width = params.click_el_height = 20;
-                    params.timeout = 10;			
-                break;
-            }
-            
-            return params;
-        },
-        start: () => {
-            let difficult = game.single_mode.menu.find('.difficult option:selected').attr('value'),
-                params = game.single_mode.get_params(difficult);
+    click_action = (event) => {
+        event.preventDefault();
 
-            game.database.single_mode.latest_difficult = difficult;
-            game.common.start(params);
-    
-            setTimeout(game.single_mode.over, params.timeout * 1000, difficult);
-        },
-        over: (difficult) => {
-            let result_el = game.menus.find('.result');
-    
-            result_el.show().siblings().hide();
-            result_el.find('.desc').hide();
-            result_el.find('.number-clicks').show().html(game.clicks);
-            result_el.find('.back-menu').attr('data-menu', 'single-game');
-            game.click_el.hide();
-            game.menus.show(250);
-            
-            if (game.clicks > game.database.single_mode[difficult].record) {
-                result_el.find('.number-clicks').show().html(game.clicks + game.messages.single_new_record_add);                
-                game.achievements.menu.find('.' + difficult).html(game.clicks);
+        this.clicks += 1;
 
-                game.database.single_mode[difficult].record = game.clicks;
-                game.tools.set_storage(game.database, 'clicker');
-            }
-        },
-        init: () => {
-            game.single_mode.menu.find('.difficult')
-                .change(game.single_mode.change_difficult_select)
-                .val(game.database.single_mode.latest_difficult ).change();
-            game.single_mode.menu.find('.start').click(game.single_mode.start);
+        g_tools.set_random_place_area(g_data.click_el, g_data.window);
+    }
+
+    start = (params) => {
+        g_data.clicks = 0;
+        g_data.menus.hide();
+        g_data.window.css({
+            'width': params.window_width + 'vw',
+            'height': params.window_height + 'vh'
+        });
+        g_data.click_el.css({
+            'width': params.click_el_width,
+            'height': params.click_el_height
+        }).show(100).off('click').click(this.click_action);
+
+        g_tools.set_random_place_area(g_data.click_el, g_data.window);
+    }
+
+    over = () => {
+        g_data.click_el.hide();
+        g_data.menus.show(250);
+    }
+
+    show_result = (title = false, desc = false, num_clicks = false, menu_back) => {
+        this.over();
+
+        this.result_window.show().siblings().hide();
+        this.result_window.find('.title, .desc, .number-clicks').hide();
+
+        if (title)
+            this.result_window.find('.title').show().html(title);
+
+        if (desc)         
+            this.result_window.find('.desc').show().html(desc);
+
+        if (num_clicks)
+            this.result_window.find('.number-clicks').show().html(num_clicks);
+
+        this.result_window.find('.back-menu').attr('data-menu', menu_back);
+    }
+    
+    init = () => {
+        g_data.menus.find('.get-menu, .back-menu').click(this.open_menu);
+
+        setTimeout(() => {
+            let menu_elements = g_data.menus.find('.menu:visible').find('button, select');
+
+            g_tools.set_equal_width(menu_elements);
+        }, 300 );
+    }
+}
+
+class single_mode {
+    constructor() {
+        this.menu_now = g_data.single_mode.menu;
+        this.init();
+    }
+
+    change_difficult = (event) => {
+        let difficult = $(event.target).find('option:selected').attr('value'),
+            record_el = this.menu_now.find('.record');
+
+        if (g_db.single_mode[difficult].record) {
+            record_el.show(100).html(g_data.messages.single_new_record + ' ' + g_db.single_mode[difficult].record);
+        } else {
+            record_el.hide(100);
         }
-    },
-    arcade_mode: {
-        menu_now: null,
-        get_params: (lvl) => {
-            let params = {
+    }
+
+    get_difficult_params = (difficult) => {
+        let params = {
+            /* easy */
+            window_width: 50,
+            window_height: 50,
+            click_el_width: 50,
+            click_el_height: 50,
+            timeout: 20
+        };
+
+        switch (difficult) {
+            case 'normal':
+                params.window_width = params.window_height = 80;
+                params.click_el_width = params.click_el_height = 35;
+                params.timeout = 15;
+            break;
+
+            case 'hard':
+                params.window_width = params.window_height = 100;
+                params.click_el_width = params.click_el_height = 20;
+                params.timeout = 10;
+            break;
+        }
+
+        return params;
+    }
+
+    start = () => {
+        let difficult = this.menu_now.find('.difficult option:selected').attr('value'),
+            params = this.get_difficult_params(difficult);
+
+        g_db.single_mode.latest_difficult = difficult;
+        g_main.start(params);
+
+        setTimeout(this.over, params.timeout * 1000, difficult);
+    }
+
+    over = (difficult) => {
+        let is_record = g_main.clicks > g_db.single_mode[difficult].record,
+            record_mess = is_record ? '<span class="record">' + g_data.messages.single_new_record_add + '</span>' : false;
+
+        g_main.show_result(g_data.messages.single_new_record, record_mess, g_main.clicks, 'single-game');
+
+        if (is_record) {
+            g_db.single_mode[difficult].record = g_main.clicks;
+            g_tools.set_storage(g_db, 'clicker');
+        }
+    }
+
+    init = () => {
+        this.menu_now.find('.difficult').change(this.change_difficult).val(g_db.single_mode.latest_difficult).change();
+        this.menu_now.find('.start').click(this.start);
+    }
+}
+
+class arcade_mode {
+    constructor() {
+        this.menu_now = g_data.arcade_mode.menu;
+        this.init();
+    }
+
+    get_lvl_params = (lvl) => {
+        let params = {
                 window_width: 50,
                 window_height: 50,
                 click_el_width: 50,
                 click_el_height: 50,
                 number_clicks: 15,
                 timeout: 20
-            },timer;
+            };
 
-            params.window_width = params.window_height = params.window_width + (params.window_width / 12 * lvl);
-            params.click_el_width = params.click_el_height = params.click_el_width - (lvl * 2.5);
-            params.timeout = params.timeout - (lvl * 0.5);
+        params.window_width = params.window_height = params.window_width + (params.window_width / 12 * lvl);
+        params.click_el_width = params.click_el_height = params.click_el_width - (lvl * 2.5);
+        params.timeout = params.timeout - (lvl * 0.5);
 
-            return params;
-        },
-        start: () => {
-            let lvl = game.database.arcade_mode.lvl,
-                params = game.arcade_mode.get_params(lvl),
-                timer;
+        return params;
+    }
 
-            game.common.start(params);
-    
-            timer = setTimeout(game.arcade_mode.over, params.timeout * 1000, 'fail');
+    start = () => {
+        let lvl = g_db.arcade_mode.lvl,
+            params = this.get_lvl_params(lvl),
+            timer;
 
-            game.click_el.click({
-                number_clicks: params.number_clicks,
-                timer
-            }, game.arcade_mode.check_clicks);
-        },
-        check_clicks: (event) => {
-            event.preventDefault();
+        g_main.start(params);
 
-            if (game.clicks == event.data.number_clicks) {
-                game.arcade_mode.over('success');
-                clearTimeout(event.data.timer);
-            }
-        },
-        over: (result) => {
-            let result_el = game.menus.find('.result'),
-                title,desc;
-    
-            result_el.show().siblings().hide();
-            result_el.find('.number-clicks').hide();
-            result_el.find('.back-menu').attr('data-menu', 'arcade-mode');
-            game.click_el.hide();
-            game.menus.show(250);
+        timer = setTimeout(this.over, params.timeout * 1000, 'fail');
 
-            if (result == 'success') {
-                let win = game.database.arcade_mode.lvl == game.arcade_mode.max_lvl;
+        g_data.click_el.click({
+            number_clicks: params.number_clicks,
+            timer
+        }, this.check_clicks);
+    }
 
-                title = win ? game.messages.arcade_win_title : game.messages.arcade_success_title;
-                desc = win ? game.messages.arcade_win_desc : game.messages.arcade_success_desc;
-				game.database.arcade_mode.lvl = win ? 1 : game.database.arcade_mode.lvl + 1;
-				
-				if (game.database.arcade_mode.lvl > game.database.arcade_mode.user_max_lvl) {
-					game.database.arcade_mode.user_max_lvl = game.database.arcade_mode.lvl;
-					game.achievements.menu.find('.arcade-max').html(game.database.arcade_mode.user_max_lvl);
-				}
-            } else if (result == 'fail') {
-                title = game.messages.arcade_fail_title;
-                desc = game.messages.arcade_fail_desc;
-                game.database.arcade_mode.lvl = 1;
-            }
-            
-            result_el.find('.title').html(title);
-            result_el.find('.desc').show().html(desc);
-            game.arcade_mode.menu.find('.lvl .now').html(game.database.arcade_mode.lvl);
-            game.tools.set_storage(game.database, 'clicker');            
-        },
-        init: () => {
-            game.arcade_mode.menu.find('.lvl .now').html(game.database.arcade_mode.lvl);
-            game.arcade_mode.menu.find('.lvl .of').html(game.database.arcade_mode.max_lvl);
-            game.arcade_mode.menu.find('.start').click(game.arcade_mode.start);
+    check_clicks = (event) => {
+        event.preventDefault();
+
+        if (g_main.clicks == event.data.number_clicks) {
+            this.over('success');
+            clearTimeout(event.data.timer);
         }
-    },
-    achievements: {
-        menu_now: null,
-        init: () => {
-            let single_difficults = game.database.single_mode;
+    }
 
-            for (let key in single_difficults) {
-                game.achievements.menu.find('.' + key).html(single_difficults[key].record);
-			}
-			
-			game.achievements.menu.find('.arcade-max').html(game.database.arcade_mode.user_max_lvl);
+    over = (result) => {
+        let title, desc;
+
+        if (result == 'success') {
+            let win = g_db.arcade_mode.lvl == g_data.arcade_mode.max_lvl;
+
+            title = win ? g_data.messages.arcade_win_title : g_data.messages.arcade_success_title;
+            desc = win ? g_data.messages.arcade_win_desc : g_data.messages.arcade_success_desc;
+            g_db.arcade_mode.lvl = win ? 1 : g_db.arcade_mode.lvl + 1;
+
+            if (g_db.arcade_mode.lvl > g_db.arcade_mode.user_max_lvl) {
+                g_db.arcade_mode.user_max_lvl = g_db.arcade_mode.lvl;
+            }
+        } else if (result == 'fail') {
+            title = g_data.messages.arcade_fail_title;
+            desc = g_data.messages.arcade_fail_desc;
+            g_db.arcade_mode.lvl = 1;
         }
-    },
-    init: () => {
-		let get_storage = localStorage.getItem('clicker'),
-			params = {
-				single_mode: {
-					latest_difficult: 'easy',
+
+        g_main.show_result(title, desc, false, 'arcade-mode');
+
+        this.menu_now.find('.lvl .now').html(g_db.arcade_mode.lvl);
+
+        g_tools.set_storage(g_db, 'clicker');
+    }
+
+    init = () => {
+        this.menu_now.find('.lvl .now').html(g_db.arcade_mode.lvl);
+        this.menu_now.find('.lvl .of').html(g_data.arcade_mode.max_lvl);
+        this.menu_now.find('.start').click(this.start);
+    }
+}
+
+class achievements {
+    constructor() {
+        this.call_button = g_data.achievements.call_button;
+        this.menu_now = g_data.achievements.menu;
+        this.init();
+    }
+
+    render = () => {
+        $.each(g_db.single_mode, (key, value) => {
+            this.menu_now.find('.' + key).html(value.record);
+        });
+
+        this.menu_now.find('.arcade-max').html(g_db.arcade_mode.user_max_lvl);        
+    }
+
+    init = () => {
+        this.call_button.click(this.render);
+    }
+}
+
+class init {
+    constructor() {
+        g_tools = new tools();
+        g_db = this.database();        
+        g_data = this.game_data();
+        g_main = new main();
+
+        this.single();
+        this.arcade();
+        this.achievements();
+    }
+
+    database() {
+        let g_db = {},
+            storage = g_tools.get_storage('clicker'),
+            _default = {
+                single_mode: {
+                    latest_difficult: 'easy',
                     easy: {
                         record: 0
                     },
@@ -240,50 +314,67 @@ let game = {
                     hard: {
                         record: 0
                     }
-				},
-				arcade_mode: {
-					lvl: 1,
-					user_max_lvl: 1
-				}
-			};
-		
-        /* Options */
-        game.menus = $('.start-game');
-        game.single_mode.menu = game.menus.find('.single-game');
-        game.arcade_mode.menu = game.menus.find('.arcade-mode');
-        game.achievements.menu = game.menus.find('.achievements');
+                },
+                arcade_mode: {
+                    lvl: 1,
+                    user_max_lvl: 1
+                }
+            };
 
-        game.window = $('.game-window');
-        game.click_el = game.window.find('.click');
+        g_db = storage ? $.extend(_default, JSON.parse(storage)) : _default;
+        
+        return g_db;
+    }
 
-        game.messages = {
-            single_new_record: 'Твой рекорд:',
-            single_new_record_add: '<br> новый рекорд!',
-            arcade_win_title: 'Конец',
-            arcade_win_desc: 'Игра пройдена...',
-            arcade_success_title: 'Уровень пройден',
-            arcade_success_desc: 'Отлично! Жми назад и переходи в следующему уровню',
-            arcade_fail_title: 'Игра окончена',
-            arcade_fail_desc: 'Попробуй еще раз'
+    game_data() {
+        let g_data = {};
+
+        g_data.menus = $('#game-modal');
+        g_data.window = $('#game-window');
+        g_data.click_el = g_data.window.find('.click');
+        g_data.result_menu = g_data.menus.find('#result');
+        g_data.messages = {
+            single_new_record: 'Your record:',
+            single_new_record_add: 'new record!',
+            arcade_win_title: 'Game over',
+            arcade_win_desc: 'Game is complete...',
+            arcade_success_title: 'Level complete',
+            arcade_success_desc: 'Fine! Press back and go to the next level',
+            arcade_fail_title: 'Game over',
+            arcade_fail_desc: 'Try again'
         };
 
-        game.arcade_mode.max_lvl = 12;
-        /* Options end */
+        return g_data;
+    }
 
-		game.database = get_storage ? $.extend(params, JSON.parse(get_storage)) : params;
-        game.menus.find('.get-menu, .back-menu').click(game.common.open_menu);
-        game.single_mode.init();      
-        game.arcade_mode.init();      
-        game.achievements.init();        
+    single() {
+        g_data.single_mode = {
+            menu: g_data.menus.find('#single-game')
+        }
 
-        setTimeout(() => {
-            game.menus.find('.menu:visible').each((index, element) => {
-                let form_els = $(element).find('button, select');
-                
-                game.tools.set_equal_width(form_els);
-            });
-        }, 320);
+        new single_mode();
+    }
+
+    arcade() {
+        g_data.arcade_mode = {
+            menu: g_data.menus.find('#arcade-mode'),
+            max_lvl: 12
+        },
+
+        new arcade_mode();
+    }
+
+    achievements() {
+        g_data.achievements = {
+            call_button: g_data.menus.find('#get-achievements-menu'),
+            menu: g_data.menus.find('#achievements')
+        }
+
+        new achievements();
     }
 }
 
-game.init();
+
+let g_db, g_data, g_main, g_tools;
+
+new init();

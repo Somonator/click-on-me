@@ -6,50 +6,51 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<div class="game-window">
+		<noscript><h1 style="color: red;">Please, enable javascript or update your browser</h1></noscript>
+		<div id="game-window" class="game-window">
 			<div class="click"></div>
 		</div>
 
-		<div class="start-game">
-			<div class="main-menu menu">
+		<div id="game-modal" class="start-game">
+			<div id="main-menu" class="main-menu menu">
 				<h1 class="title">Click on me</h1>
 
-				<button data-menu="single-game" class="get-menu">Одиночная игра</button>
-				<button data-menu="arcade-mode" class="get-menu">Аркада</button>
-				<button data-menu="achievements" class="get-menu">Достижения</button>
+				<button id="get-single-game-menu" data-menu="single-game" class="get-menu">Single game</button>
+				<button id="get-arcade-menu" data-menu="arcade-mode" class="get-menu">Arcade</button>
+				<button id="get-achievements-menu" data-menu="achievements" class="get-menu">Progress</button>
 			</div>
 
-			<div class="single-game menu" style="display: none;">
-				<div class="title">Одиночная игра</div>
-				<p class="copy">Выбирай сложность и кликай на кружок,<br>а я подсчитаю количество кликов.</p>
+			<div id="single-game" class="single-game menu" style="display: none;">
+				<div class="title">Single game</div>
+				<p class="copy">Choose difficulty and click on the circle,<br>and I will count the number of clicks.</p>
 				<p class="record" style="display: none;"></p>				
 
 				<select class="difficult">
-					<option value="easy" selected>Легко</option>
-					<option value="normal">Нормально</option>
-					<option value="hard">Сложно</option>
+					<option value="easy" selected>Easy</option>
+					<option value="normal">Normal</option>
+					<option value="hard">Hard</option>
 				</select>
 
-				<button class="start">Начать игру</button>
-				<button data-menu="main-menu" class="back-menu">Назад</button>
+				<button class="start">Start the game</button>
+				<button data-menu="main-menu" class="back-menu">Back</button>
 			</div>
 
-			<div class="arcade-mode menu" style="display: none;">
-				<div class="title">Аркада</div>
-				<p class="lvl">Уровень <span class="now">1</span> из <span class="of">12</span></p>
+			<div id="arcade-mode" class="arcade-mode menu" style="display: none;">
+				<div class="title">Arcade</div>
+				<p class="lvl">Level <span class="now">1</span> of <span class="of">12</span></p>
 				
-				<button class="start">Начать игру</button>
-				<button data-menu="main-menu" class="back-menu">Назад</button>
+				<button class="start">Start the game</button>
+				<button data-menu="main-menu" class="back-menu">Back</button>
 			</div>
 
-			<div class="achievements menu" style="display: none;">
-				<div class="title">Достижения</div>
-				<p class="sub-title">Рекорды в одиночной игре:</p>
+			<div id="achievements" class="achievements menu" style="display: none;">
+				<div class="title">Progress</div>
+				<p class="sub-title">Single game records:</p>
 
 				<div class="row tac">
-					<div class="col-3 bold">Легко</div>
-					<div class="col-3 bold">Нормально</div>
-					<div class="col-3 bold">Сложно</div>
+					<div class="col-3 bold">Easy</div>
+					<div class="col-3 bold">Normal</div>
+					<div class="col-3 bold">Hard</div>
 					<div class="col-3 record easy"></div>
 					<div class="col-3 record normal"></div>
 					<div class="col-3 record hard"></div>
@@ -57,22 +58,22 @@
 
 				<hr>
 
-				<p class="sub-title">Максимальный уровень аркады:</p>
+				<p class="sub-title">Arcade max lvl:</p>
 				<p class="arcade-max record">1</p>
 
 				<hr>
 
-				<p class="sub-title">Ачивки:</p>
-				<p class="record">Скоро</p>
+				<p class="sub-title">Achievements:</p>
+				<p class="record">Coming soon</p>
 				
-				<button data-menu="main-menu" class="back-menu">Назад</button>
+				<button data-menu="main-menu" class="back-menu">Back</button>
 			</div>
-			<div class="result menu" style="display: none;">
-				<div class="title">Твой результат</div>
+			<div id="result" class="result menu" style="display: none;">
+				<div class="title"></div>
 				<p class="desc" style="display: none;"></p>
 				<p class="number-clicks" style="display: none;"></p>
 
-				<button data-menu="" class="back-menu">Назад</button>			
+				<button data-menu="" class="back-menu">Back</button>			
 			</div>
 		</div>
 
